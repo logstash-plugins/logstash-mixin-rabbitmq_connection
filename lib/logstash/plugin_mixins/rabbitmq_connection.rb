@@ -96,7 +96,11 @@ module LogStash
 
         s[:timeout] = @connection_timeout || 0
         s[:heartbeat] = @heartbeat || 0
-        s[:tls] = @ssl if @ssl
+        if @ssl && @ssl == 'true'
+          s[:tls] = true
+        else
+          s[:tls] = @ssl if @ssl
+        end
         s[:tls_certificate_path] = @tls_certificate_path || ""
         s[:tls_certificate_password] = @tls_certificate_password || ""
         @rabbitmq_settings = s
