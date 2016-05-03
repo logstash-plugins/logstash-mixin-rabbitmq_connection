@@ -1,3 +1,5 @@
+* 2.4.1
+  - Fixed backward incompatible SSL Support
 * 2.4.0
   - Add SSL/TLS Support
   - Add support for "x-consistent-hash" and "x-modulus-hash" exchanges
