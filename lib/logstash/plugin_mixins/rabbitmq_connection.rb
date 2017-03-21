@@ -106,7 +106,7 @@ module LogStash
       def close_connection
         @rabbitmq_connection_stopping = true
         @hare_info.channel.close if channel_open?
-        if !!@connection_pool_name
+        if !@connection_pool_name.nil?
             cache_key = {:host => @host,:port => @port,:vhost => @vhost,:user => @user,:pool => @connection_pool_name}.freeze
             @@connection_cache_mutex.synchronize {
               if @@connection_cache.has_key?(cache_key) and (@@connection_cache[cache_key].ref_counter -= 1) == 0
@@ -153,7 +153,7 @@ module LogStash
 
       def connect!
         if !@hare_info # Don't duplicate the conn!
-            if !!@connection_pool_name
+            if !@connection_pool_name.nil?
               cache_key = {:host => @host,:port => @port,:vhost => @vhost,:user => @user,:pool => @connection_pool_name}.freeze 
               @@connection_cache_mutex.synchronize {
                 if @@connection_cache.has_key?(cache_key)
