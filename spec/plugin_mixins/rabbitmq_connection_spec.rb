@@ -135,10 +135,13 @@ describe LogStash::PluginMixins::RabbitMQConnection do
   # handled by the automatic retry mechanism built-in to MarchHare
   describe "initial connection exceptions" do
     subject { instance }
+    
+    let(:connection) { double("MarchHare Connection") }
+    let(:channel) { double("Channel") }
 
     before do
       allow(subject).to receive(:sleep_for_retry)
-
+      allow(connection).to receive(:create_channel).and_return(channel)
 
       i = 0
       allow(subject).to receive(:connect) do
@@ -146,7 +149,7 @@ describe LogStash::PluginMixins::RabbitMQConnection do
         if i == 1
           raise(MarchHare::ConnectionRefused, "Error!")
         else
-          double("connection",:create_channel => channel)
+          connection
         end
       end
 
