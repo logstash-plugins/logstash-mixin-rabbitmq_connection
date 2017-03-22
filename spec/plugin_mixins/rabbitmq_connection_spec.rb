@@ -146,7 +146,7 @@ describe LogStash::PluginMixins::RabbitMQConnection do
         if i == 1
           raise(MarchHare::ConnectionRefused, "Error!")
         else
-          double("connection")
+          double("connection",:create_channel => channel)
         end
       end
 
