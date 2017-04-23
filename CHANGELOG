@@ -1,3 +1,15 @@
+* 4.2.2
+- Bump march hare to 2.22.0 to properly convert LongString to String
+* 4.2.1
+- Bump march_hare version to 2.20.0 to fix reconnection issues
+* 4.2.0
+- Include URL of server when logging errors
+- Add warning log when connection is severed
+* 4.1.3
+- Bump march_hare version to 2.19.0 to fix reconnection failures with
+  proxies. See
+  https://github.com/logstash-plugins/logstash-input-rabbitmq/issues/76 for
+  more info
 * 4.1.2
   - Retry the connection attempt if there is an IO Exception.
 * 4.1.1

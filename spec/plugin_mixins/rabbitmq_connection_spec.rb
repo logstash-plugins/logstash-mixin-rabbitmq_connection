@@ -58,6 +58,32 @@ describe LogStash::PluginMixins::RabbitMQConnection do
     it "should set tls_certificate_password to the expected value" do
       expect(instance.rabbitmq_settings[:tls_certificate_password]).to eql(rabbitmq_settings["ssl_certificate_password"])
     end
+
+    it "should set hosts to the expected value " do
+      expect(instance.rabbitmq_settings[:hosts][0]).to eql(host)
+    end
+
+    it "should only insert a single host entry" do
+      expect(instance.rabbitmq_settings[:hosts].length).to eql(1)
+    end
+  end
+
+  describe "rabbitmq_settings multiple hosts" do
+    let(:file) { Stud::Temporary.file }
+    let(:path) { file.path }
+    after { File.unlink(path)}
+
+    let(:rabbitmq_settings) { super.merge({"host" => ["host01", "host02", "host03"]}) }
+
+    it "should set hosts to the expected value" do
+      expect(instance.rabbitmq_settings[:hosts][0]).to eql("host01")
+      expect(instance.rabbitmq_settings[:hosts][1]).to eql("host02")
+      expect(instance.rabbitmq_settings[:hosts][2]).to eql("host03")
+    end
+
+    it "should insert 3 host entries" do
+      expect(instance.rabbitmq_settings[:hosts].length).to eql(3)
+    end
   end
 
   context "when connected" do
@@ -70,6 +96,7 @@ describe LogStash::PluginMixins::RabbitMQConnection do
       allow(connection).to receive(:create_channel).and_return(channel)
       allow(connection).to receive(:on_blocked)
       allow(connection).to receive(:on_unblocked)
+      allow(connection).to receive(:on_shutdown)
 
       instance.register
     end
