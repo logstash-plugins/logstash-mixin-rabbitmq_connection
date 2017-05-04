@@ -205,7 +205,7 @@ module LogStash
            @logger.warn("RabbitMQ connection was closed!",
                           :url => connection_url(conn),
                           :automatic_recovery => @automatic_recovery,
-                          :cause => cause)
+                          :cause => cause.message)
         end
         connection.on_blocked do
           @logger.warn("RabbitMQ connection blocked! Check your RabbitMQ instance!",
