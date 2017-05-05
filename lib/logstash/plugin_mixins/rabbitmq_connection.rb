@@ -182,16 +182,16 @@ module LogStash
 
       private
 
-      def declare_exchange!(channel, exchange, exchange_type, durable)
+      def declare_exchange!(channel, exchange, exchange_type, durable, arguments)
         @logger.debug? && @logger.debug("Declaring an exchange", :name => exchange,
-                      :type => exchange_type, :durable => durable)
-        exchange = channel.exchange(exchange, :type => exchange_type.to_sym, :durable => durable)
+                                        :type => exchange_type, :durable => durable)
+        exchange = channel.exchange(exchange, :type => exchange_type.to_sym, :durable => durable, :arguments => arguments)
         @logger.debug? && @logger.debug("Exchange declared")
         exchange
       rescue StandardError => e
         @logger.error("Could not declare exchange!",
                       :exchange => exchange, :type => exchange_type,
-                      :durable => durable, :error_class => e.class.name,
+                      :durable => durable, :arguments => arguments, :error_class => e.class.name,
                       :error_message => e.message, :backtrace => e.backtrace)
         raise e
       end
