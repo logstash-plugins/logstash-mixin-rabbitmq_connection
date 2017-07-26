@@ -1,3 +1,5 @@
+* 4.3.1
+- Fix a bug when `log.format: json` used in Logstash. When the socket shutdown handler was called, it would crash when trying to log the exception.
 * 4.3.0
 - Bump march hare to 3.0.0
 * 4.2.2
