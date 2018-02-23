@@ -215,7 +215,7 @@ module LogStash
         end
 
         channel = connection.create_channel
-        @logger.info("Connected to RabbitMQ at #{rabbitmq_settings[:host]}")
+        @logger.info("Connected to RabbitMQ", :url => connection_url(connection))
 
         HareInfo.new(connection, channel)
       end
@@ -224,7 +224,7 @@ module LogStash
       def connection_url(connection)
         user_pass = connection.user ? "#{connection.user}:XXXXXX@" : ""
         protocol = params["ssl"] ? "amqps" : "amqp"
-        "#{protocol}://#{user_pass}#{connection.host}:#{connection.port}#{connection.vhost}"
+        "#{protocol}://#{user_pass}#{connection.host}:#{connection.port}/#{connection.vhost}"
       end
 
       def sleep_for_retry
