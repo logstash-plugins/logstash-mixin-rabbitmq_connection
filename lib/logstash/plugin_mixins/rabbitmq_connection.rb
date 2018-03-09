@@ -222,9 +222,8 @@ module LogStash
 
       # Mostly used for printing debug logs
       def connection_url(connection)
-        user_pass = connection.user ? "#{connection.user}:XXXXXX@" : ""
         protocol = params["ssl"] ? "amqps" : "amqp"
-        "#{protocol}://#{user_pass}#{connection.host}:#{connection.port}/#{connection.vhost}"
+        "#{protocol}://#{connection.host}:#{connection.port}/#{connection.vhost}"
       end
 
       def sleep_for_retry

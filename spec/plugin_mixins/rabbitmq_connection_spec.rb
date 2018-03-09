@@ -10,6 +10,9 @@ class TestPlugin < LogStash::Outputs::Base
   def register
     connect!
   end
+
+  def connection_url(connection)
+  end
 end
 
 describe LogStash::PluginMixins::RabbitMQConnection do
