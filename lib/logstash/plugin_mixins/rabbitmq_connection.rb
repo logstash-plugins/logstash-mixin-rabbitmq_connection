@@ -93,7 +93,6 @@ module LogStash
       def rabbitmq_settings
         return @rabbitmq_settings if @rabbitmq_settings
 
-
         s = {
           :vhost => @vhost,
           :addresses => addresses_from_hosts_and_port(@host, @port),
@@ -123,9 +122,10 @@ module LogStash
       end
 
       def addresses_from_hosts_and_port(hosts, port)
+        # Expand host to include port, unless port is already present
+        # (Allowing hosts with port was a previously undocumented feature)
         hosts.map {|host| host.include?(':') ? host : "#{host}:#{port}"}
       end
-
 
       def connect!
         @hare_info = connect() unless @hare_info # Don't duplicate the conn!
