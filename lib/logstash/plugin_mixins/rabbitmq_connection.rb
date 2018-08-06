@@ -121,11 +121,41 @@ module LogStash
         @rabbitmq_settings = s
       end
 
+
+      # Adds port to the value of host if it is not already supplied
+      def format_address(host, port)
+        case host.count(':')
+        when 0
+          "#{host}:#{port}"
+        when 1
+          host
+        else
+          format_ipv6(host, port)
+        end
+      end
+
+      # Formats an IPv6 to include the port, if it is not already given, conforming to the format used for
+      # literal IPv6 addresses in URIs,
+      # eg [2406:da00:ff00::6b15:edbc]:80
+      def format_ipv6(host, port)
+        last_bracket = host.rindex(']')
+        if last_bracket
+          if last_bracket < host.rindex(':')
+            host
+          else
+            "#{host}:#{port}"
+          end
+        else
+          "[#{host}]:#{port}"
+        end
+      end
+
       def addresses_from_hosts_and_port(hosts, port)
         # Expand host to include port, unless port is already present
         # (Allowing hosts with port was a previously undocumented feature)
-        hosts.map {|host| host.include?(':') ? host : "#{host}:#{port}"}
+        hosts.map{|host|format_address(host, port)}
       end
+
 
       def connect!
         @hare_info = connect() unless @hare_info # Don't duplicate the conn!

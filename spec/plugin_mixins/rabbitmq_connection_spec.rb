@@ -27,14 +27,16 @@ describe LogStash::PluginMixins::RabbitMQConnection do
   }
   let(:hare_info) { instance.instance_variable_get(:@hare_info) }
 
+
+
   shared_examples_for 'it sets the addresses correctly' do
     let(:file) { Stud::Temporary.file }
     let(:path) { file.path }
-    let(:host) {%w(host01 host02 host03)}
 
     it "should set addresses to the expected value" do
-      host.each_with_index do |each_host, index|
-        expect(instance.rabbitmq_settings[:addresses][index]).to eql("#{each_host}:#{port}")
+      host.each_with_index do |_, index|
+        puts(expected_values[index])
+        expect(instance.rabbitmq_settings[:addresses][index]).to eql(expected_values[index])
       end
     end
 
@@ -75,13 +77,70 @@ describe LogStash::PluginMixins::RabbitMQConnection do
       expect(instance.rabbitmq_settings[:tls_certificate_password]).to eql(rabbitmq_settings["ssl_certificate_password"])
     end
 
-    it_behaves_like 'it sets the addresses correctly'
+    context 'with host names' do
+      let (:host) {%w(localhost rmq.elastic.co rmq.local)}
+      let (:expected_values) {%w(localhost:5672 rmq.elastic.co:5672 rmq.local:5672)}
+
+      it_behaves_like 'it sets the addresses correctly'
+    end
+
+    context 'with host names including ports' do
+      let (:host) {%w(localhost:123 rmq.elastic.co:234 rmq.local:345)}
+      let (:expected_values) {%w(localhost:123 rmq.elastic.co:234 rmq.local:345)}
+
+      it_behaves_like 'it sets the addresses correctly'
+    end
+
+    context 'with ipv4 ip addresses' do
+      let (:host) {%w(127.0.0.1 192.168.1.1 192.168.1.2)}
+      let (:expected_values) {%w(127.0.0.1:5672 192.168.1.1:5672 192.168.1.2:5672)}
+
+      it_behaves_like 'it sets the addresses correctly'
+    end
+
+    context 'with ipv4 ip addresses including ports' do
+      let (:host) {%w(127.0.0.1:123 192.168.1.1:234 192.168.1.2:345)}
+      let (:expected_values) {host}
+
+      it_behaves_like 'it sets the addresses correctly'
+    end
+
+    context 'with ipv6 addresses' do
+      let (:host) {%w(::1 fe80::1c86:a2e:4bec:4a9f%en0 2406:da00:ff00::36e1:f792 [::1] [fe80::1c86:a2e:4bec:4a9f%en0] [2406:da00:ff00::36e1:f792])}
+      let (:expected_values) {%w([::1]:5672 [fe80::1c86:a2e:4bec:4a9f%en0]:5672 [2406:da00:ff00::36e1:f792]:5672 [::1]:5672 [fe80::1c86:a2e:4bec:4a9f%en0]:5672 [2406:da00:ff00::36e1:f792]:5672)}
+      it_behaves_like 'it sets the addresses correctly'
+    end
+
+    context 'with ipv6 addresses including ports' do
+      let (:host) {%w([::1]:456 [fe80::1c86:a2e:4bec:4a9f%en0]:457 [2406:da00:ff00::36e1:f792]:458)}
+      let (:expected_values) {%w([::1]:456 [fe80::1c86:a2e:4bec:4a9f%en0]:457 [2406:da00:ff00::36e1:f792]:458)}
+      it_behaves_like 'it sets the addresses correctly'
+    end
 
     context 'with a custom port' do
       let(:port) { 123 }
       let(:rabbitmq_settings) { super.merge({"port" => port})}
 
-      it_behaves_like 'it sets the addresses correctly'
+      context 'with hostnames' do
+        let (:host) {%w(localhost rmq.elastic.co rmq.local)}
+        let (:expected_values) {%w(localhost:123 rmq.elastic.co:123 rmq.local:123)}
+
+        it_behaves_like 'it sets the addresses correctly'
+      end
+
+
+      context 'with ipv4 ip addresses' do
+        let (:host) {%w(127.0.0.1 192.168.1.1 192.168.1.2)}
+        let (:expected_values) {%w(127.0.0.1:123 192.168.1.1:123 192.168.1.2:123)}
+
+        it_behaves_like 'it sets the addresses correctly'
+      end
+
+      context 'with ipv6 addresses' do
+        let (:host) {%w(::1 fe80::1c86:a2e:4bec:4a9f%en0 2406:da00:ff00::36e1:f792 [::1] [fe80::1c86:a2e:4bec:4a9f%en0] [2406:da00:ff00::36e1:f792])}
+        let (:expected_values) {%w([::1]:123 [fe80::1c86:a2e:4bec:4a9f%en0]:123 [2406:da00:ff00::36e1:f792]:123 [::1]:123 [fe80::1c86:a2e:4bec:4a9f%en0]:123 [2406:da00:ff00::36e1:f792]:123)}
+        it_behaves_like 'it sets the addresses correctly'
+      end
     end
   end
 
@@ -95,27 +154,6 @@ describe LogStash::PluginMixins::RabbitMQConnection do
       expect(instance.rabbitmq_settings[:tls_certificate_path]).to be nil
     end
 
-  end
-
-  describe "rabbitmq_settings with multiple hosts" do
-    it_behaves_like 'it sets the addresses correctly'
-
-    context 'with a custom port'  do
-      let(:port) { 999 }
-      let(:rabbitmq_settings) { super.merge({"port" => port})}
-
-      it_behaves_like 'it sets the addresses correctly'
-    end
-
-    context 'when ports are set in the host definition' do
-      let(:host) { %w(host01:4444 host02:4445 host03:4446)}
-
-      it "should set the address correctly" do
-        expect(instance.rabbitmq_settings[:addresses][0]).to eql("host01:4444")
-        expect(instance.rabbitmq_settings[:addresses][1]).to eql("host02:4445")
-        expect(instance.rabbitmq_settings[:addresses][2]).to eql("host03:4446")
-      end
-    end
   end
 
   context "when connected" do
