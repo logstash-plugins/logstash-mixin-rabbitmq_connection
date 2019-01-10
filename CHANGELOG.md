@@ -1,3 +1,6 @@
+## 6.0.0
+   - Removed obsolete options `verify_ssl`, `debug`, `tls_certificate_path` and `tls_certificate_password`
+
 ## 5.0.2
    - Bug Fix: undefined method `value' for nil:NilClass with SSL enabled, but no certificates provided [#109](https://github.com/logstash-plugins/logstash-input-rabbitmq/issues/109)
 ## 5.0.1
