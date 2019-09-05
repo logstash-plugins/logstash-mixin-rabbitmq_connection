@@ -1,3 +1,7 @@
+## 7.0.0
+   - Updated `march_hare` dependency to `4.x`, which enables consumers to reliably manage a connection blocked/unblocked state machine that survives connection recovery.
+   - Removed support for Logstash 5.x since `march_hare` >= 3.x is not compatible.
+
 ## 6.0.0
    - Removed obsolete options `verify_ssl`, `debug`, `tls_certificate_path` and `tls_certificate_password`
 
