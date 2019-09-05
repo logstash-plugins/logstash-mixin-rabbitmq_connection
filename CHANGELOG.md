@@ -1,3 +1,7 @@
+## 6.1.0
+   - Update march_hare dependency to 4.x.
+     Although this is a major version bump on a dependency, it is because 4.x now requires jdk8 which was always a dependency on logstash.
+
 ## 6.0.0
    - Removed obsolete options `verify_ssl`, `debug`, `tls_certificate_path` and `tls_certificate_password`
 
