@@ -1,3 +1,6 @@
+## 6.1.1
+   - Fixed issue with custom port assignment when multiple hosts are specified. [#54](https://github.com/logstash-plugins/logstash-mixin-rabbitmq_connection/pull/54)
+
 ## 6.1.0
    - Updated `march_hare` dependency to `4.x`, which enables consumers to reliably manage a connection blocked/unblocked state machine that survives connection recovery.
    - Removed support for Logstash 5.x since `march_hare` >= 3.x is not compatible.
