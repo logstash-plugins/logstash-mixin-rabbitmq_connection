@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   # This effectively requires Logstash >= 6.x
   s.required_ruby_version = '>= 2.0.0'
 
-  s.add_runtime_dependency 'march_hare', ['~> 4.0'] #(MIT license)
+  s.add_runtime_dependency 'march_hare', ['~> 4.1'] #(MIT license)
   s.add_runtime_dependency 'stud', '~> 0.0.22'
 
   s.add_development_dependency 'logstash-devutils'
