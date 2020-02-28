@@ -139,16 +139,13 @@ module LogStash
       end
 
       def load_trust_manager
-        java_import java.io.FileInputStream
-        java_import java.security.KeyStore
-        java_import javax.net.ssl.TrustManagerFactory
-        java_import javax.net.ssl.TrustManagerFactory
-
-        @logger.debug("Loading trust manager", :ssl_truststore_path => @ssl_truststore_path,
-                                               :ssl_truststore_password => @ssl_truststore_password)
-        tks = KeyStore.getInstance("JKS");
-        tks.load(FileInputStream.new(@ssl_truststore_path), @ssl_truststore_password.value.to_java.to_char_array)
-        tmf = TrustManagerFactory.getInstance("SunX509");
+        @logger.debug? && @logger.debug("Loading trust manager",
+                                        :ssl_truststore_path => @ssl_truststore_path,
+                                        :ssl_truststore_password => @ssl_truststore_password)
+        tks = java.security.KeyStore.getInstance("JKS");
+        tks.load(java.io.FileInputStream.new(@ssl_truststore_path),
+                 @ssl_truststore_password.value.to_java.to_char_array)
+        tmf = javax.net.ssl.TrustManagerFactory.getInstance("SunX509");
         tmf.init(tks);
 
         tmf.getTrustManagers.to_a
