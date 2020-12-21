@@ -1,3 +1,6 @@
+## 6.2.0
+  - Remove ruby pipeline dependency. Starting from Logstash 8, Ruby execution engine is not available. All pipelines should use Java pipeline [#64](https://github.com/logstash-plugins/logstash-mixin-rabbitmq_connection/pull/64)
+
 ## 6.1.1
    - Fixed issue with custom port assignment when multiple hosts are specified. [#54](https://github.com/logstash-plugins/logstash-mixin-rabbitmq_connection/pull/54)
 
