@@ -3,6 +3,7 @@ require "logstash/outputs/base"
 require "logstash/namespace"
 require "march_hare"
 require "java"
+require "stud/interval"
 
 # Common functionality for the rabbitmq input/output
 module LogStash
