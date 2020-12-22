@@ -55,5 +55,5 @@ fi
 
 CURRENT_DIR=$(dirname "${BASH_SOURCE[0]}")
 
-docker-compose -f ".ci/unit/docker-compose.yml" down
-docker-compose -f ".ci/unit/docker-compose.yml" build
+docker-compose -f "ci/unit/docker-compose.yml" down
+docker-compose -f "ci/unit/docker-compose.yml" build
