@@ -6,11 +6,11 @@ services:
 
   logstash:
     build:
-      context: ../../
-      dockerfile: ci/unit/Dockerfile
+      context: ../
+      dockerfile: .ci/Dockerfile
       args:
         - ELASTIC_STACK_VERSION=$ELASTIC_STACK_VERSION
-    command: /usr/share/plugins/plugin/ci/unit/run.sh
+    command: .ci/run.sh
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
       LOGSTASH_SOURCE: 1
