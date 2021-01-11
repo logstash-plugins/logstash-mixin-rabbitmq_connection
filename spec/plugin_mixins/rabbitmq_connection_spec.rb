@@ -1,6 +1,5 @@
 # encoding: utf-8
 require "logstash/devutils/rspec/spec_helper"
-require "logstash/pipeline"
 require "logstash/plugin_mixins/rabbitmq_connection"
 require "stud/temporary"
 
