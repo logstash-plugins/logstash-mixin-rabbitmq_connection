@@ -61,6 +61,12 @@ module LogStash
         # Password for the encrypted PKCS12 (.p12) certificate file specified in ssl_certificate_path
         config :ssl_certificate_password, :validate => :password
 
+        # Path to an SSL certificate for truststore
+        config :ssl_truststore_path, :validate => :path
+
+        # Password for the encrypted truststore file specified in ssl_truststore_path
+        config :ssl_truststore_password, :validate => :password
+
         # Set this to automatically recover from a broken connection. You almost certainly don't want to override this!!!
         config :automatic_recovery, :validate => :boolean, :default => true
 
@@ -115,6 +121,17 @@ module LogStash
             raise LogStash::ConfigurationError, "RabbitMQ requires both ssl_certificate_path AND ssl_certificate_password to be set!"
           end
 
+          trust_path = @ssl_truststore_path
+          trust_pass = @ssl_truststore_password
+          if trust_path
+            if !!trust_path ^ !!trust_pass
+              raise LogStash::ConfigurationError, "RabbitMQ requires both ssl_truststore_path AND ssl_truststore_password to be set!"
+            end
+            s[:trust_manager] = load_trust_manager
+
+            s[:sasl_config] = com.rabbitmq.client.DefaultSaslConfig::EXTERNAL
+          end
+
           s[:tls_certificate_path] = cert_path
           s[:tls_certificate_password] = cert_pass
         end
@@ -122,6 +139,18 @@ module LogStash
         @rabbitmq_settings = s
       end
 
+      def load_trust_manager
+        @logger.debug? && @logger.debug("Loading trust manager",
+                                        :ssl_truststore_path => @ssl_truststore_path,
+                                        :ssl_truststore_password => @ssl_truststore_password)
+        tks = java.security.KeyStore.getInstance("JKS");
+        tks.load(java.io.FileInputStream.new(@ssl_truststore_path),
+                 @ssl_truststore_password.value.to_java.to_char_array)
+        tmf = javax.net.ssl.TrustManagerFactory.getInstance("SunX509");
+        tmf.init(tks);
+
+        tmf.getTrustManagers.to_a
+      end
 
       # Adds port to the value of host if it is not already supplied
       def format_address(host, port)
