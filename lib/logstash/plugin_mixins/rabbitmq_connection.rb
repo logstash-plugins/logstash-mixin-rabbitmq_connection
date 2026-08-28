@@ -239,7 +239,7 @@ module LogStash
         end
 
         channel = connection.create_channel
-        @logger.info("Connected to RabbitMQ at #{rabbitmq_settings[:host]}")
+        @logger.info("Connected to RabbitMQ at #{rabbitmq_settings[:hosts]}")
 
         HareInfo.new(connection, channel)
       end
