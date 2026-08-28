@@ -12,10 +12,13 @@ module LogStash
       EXCHANGE_TYPES = ["fanout", "direct", "topic", "x-consistent-hash", "x-modulus-hash"]
 
       HareInfo = Struct.new(:connection, :channel, :exchange, :queue)
+      HareConnectionInfo = Struct.new(:connection, :ref_counter)
 
       def self.included(base)
         base.extend(self)
         base.setup_rabbitmq_connection_config
+        @@connection_cache = {}
+        @@connection_cache_mutex = Mutex.new
       end
 
       def setup_rabbitmq_connection_config
@@ -24,7 +27,7 @@ module LogStash
         # i.e.
         #   host => "localhost"
         # or
-        #   host => ["host01", "host02]
+        #   host => ["host01", "host02"]
         #
         # if multiple hosts are provided on the initial connection and any subsequent
         # recovery attempts of the hosts is chosen at random and connected to.
@@ -79,6 +82,9 @@ module LogStash
         # Extra queue arguments as an array.
         # To make a RabbitMQ queue mirrored, use: `{"x-ha-policy" => "all"}`
         config :arguments, :validate => :array, :default => {}
+
+        # Share a connection with another plugin whose pool name and paramerters are identical (host, port, vhost and username)
+        config :connection_pool_name, :validate => :string
       end
 
       def conn_str
@@ -88,7 +94,17 @@ module LogStash
       def close_connection
         @rabbitmq_connection_stopping = true
         @hare_info.channel.close if channel_open?
-        @hare_info.connection.close if connection_open?
+        if !@connection_pool_name.nil?
+            cache_key = {:host => @host,:port => @port,:vhost => @vhost,:user => @user,:pool => @connection_pool_name}.freeze
+            @@connection_cache_mutex.synchronize {
+              if @@connection_cache.has_key?(cache_key) and (@@connection_cache[cache_key].ref_counter -= 1) == 0
+                connection = @@connection_cache.delete(cache_key).connection
+                connection.close if connection_open?
+              end
+            }
+        else
+            @hare_info.connection.close if connection_open?
+        end
       end
 
       def rabbitmq_settings
@@ -159,7 +175,24 @@ module LogStash
 
 
       def connect!
-        @hare_info = connect() unless @hare_info # Don't duplicate the conn!
+        if !@hare_info # Don't duplicate the conn!
+            if !@connection_pool_name.nil?
+              cache_key = {:host => @host,:port => @port,:vhost => @vhost,:user => @user,:pool => @connection_pool_name}.freeze 
+              @@connection_cache_mutex.synchronize {
+                if @@connection_cache.has_key?(cache_key)
+                  connection = @@connection_cache[cache_key].connection
+                  @@connection_cache[cache_key].ref_counter += 1
+                else
+                  connection = connect()
+                  @@connection_cache[cache_key] = HareConnectionInfo.new(connection,1)
+                end
+                @hare_info = HareInfo.new(connection, connection.create_channel)
+              }
+            else
+              connection = connect()
+              @hare_info = HareInfo.new(connection, connection.create_channel)
+            end
+        end
       rescue MarchHare::Exception, java.io.IOException => e
         error_message = if e.message.empty? && e.is_a?(java.io.IOException)
           # IOException with an empty message is probably an instance of
@@ -238,10 +271,9 @@ module LogStash
           @logger.warn("RabbitMQ connection unblocked!", :url => connection_url(connection))
         end
 
-        channel = connection.create_channel
         @logger.info("Connected to RabbitMQ at #{rabbitmq_settings[:host]}")
 
-        HareInfo.new(connection, channel)
+        connection
       end
 
       # Mostly used for printing debug logs
